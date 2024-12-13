@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    /* CSS to widen the status column */
+    .status-column {
+      width: 150px; /* Adjust width as needed */
+    }
+    /* Center the title */
+    h1 {
+      text-align: center;
+    }
+  </style>
+  <title>Open Tickets</title>
+</head>
+<body>
+  <nav>
+    <h4>Jesse's Ticket App</h4>
+    <form action="/search" method="GET" class="form-inline">
+      <input type="text" name="description" placeholder="Enter description" class="form-control mr-2">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/profile">Profile</a></li>
+      <li><a href="/auth/logout">Logout</a></li>
+      <li><a href="/SubmitTicket">Submit A Ticket</a></li>
+      <li><a href="/OpenTickets">Open Tickets</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <h1>Open Tickets</h1>
+
+    <div id="alertMessage" class="alert alert-success" style="display:none;"></div>
+
+    <div class="btn-group" role="group" style="display: block; margin: 0 auto; text-align: center;">
+      <button id="sortAscBtn" class="btn btn-light">Sort by Date (Asc)</button>
+      <button id="sortDescBtn" class="btn btn-light">Sort by Date (Desc)</button>
+    </div>
+
+    <table class="table table-bordered">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Description</th>
+          <th scope="col">Severity</th>
+          <th scope="col">Action</th>
+          <th scope="col">Date/Time</th>
+          <th scope="col">Assigned To</th>
+          <th scope="col" class="status-column">State</th>
+          <th scope="col">Comments</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each rows}}
+          <tr>
+            <td>{{this.description}}</td>
+            <td>{{this.priority}}</td>
+            <td>
+              <a href="/viewuser/{{this.id}}" class="btn btn-light btn-small"><i class="bi bi-eye"></i> View</a>
+              <a href="/editticket/{{this.id}}" class="btn btn-light btn-small"><i class="bi bi-pencil"></i> Edit</a>
+              <a href="#" data-ticket-id="{{this.id}}" class="btn btn-light btn-small delete-ticket"><i class="bi bi-trash"></i> Delete</a>
+            </td>
+            <td>{{this.created_at}}</td>
+            <td>{{this.assigned_to}}</td>
+            <td>
+              <select class="form-control ticket-state" data-ticket-id="{{this.id}}">
+                <option value="open" {{#if (eq this.state "open")}}selected{{/if}}>Open</option>
+                <option value="closed" {{#if (eq this.state "closed")}}selected{{/if}}>Closed</option>
+              </select>
+            </td>
+            <td>
+              <ul>
+                {{#each comments}}
+                  <li>{{this.comment}} - {{this.user_name}}</li>
+                {{/each}}
+              </ul>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $(document).on('change', '.ticket-state', function () {
+        const ticketId = $(this).data('ticket-id');
+        const newState = $(this).val();
+
+        $.ajax({
+          url: '/update-ticket-state',
+          method: 'POST',
+          data: { ticketId, newState },
+          success: function (response) {
+            console.log(response.message);
+            if (newState === 'closed') {
+              $('#alertMessage').text('Ticket closed successfully.').show();
+              setTimeout(() => {
+                $('#alertMessage').fadeOut();
+              }, 3000);
+            }
+          },
+          error: function (error) {
+            console.error(error.responseJSON.error);
+          },
+        });
+      });
+
+      $(document).on('click', '.delete-ticket', function (e) {
+        e.preventDefault();
+        const ticketId = $(this).data('ticket-id');
+
+        $.ajax({
+          url: '/profile/' + ticketId,
+          method: 'POST',
+          success: function (response) {
+            console.log(response.message);
+            $(e.target).closest('tr').remove();
+            $('#alertMessage').text('Ticket successfully deleted.').show();
+            setTimeout(() => {
+              $('#alertMessage').fadeOut();
+            }, 3000);
+          },
+          error: function (error) {
+            console.error(error.responseJSON.error);
+          },
+        });
+      });
+
+      function sortTable(order) {
+        const rows = $('tbody tr').get();
+        rows.sort(function (a, b) {
+          const dateA = new Date($(a).find('td:nth-child(4)').text()).getTime();
+          const dateB = new Date($(b).find('td:nth-child(4)').text()).getTime();
+
+          return order === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+
+        $.each(rows, function (index, row) {
+          $('tbody').append(row);
+        });
+      }
+
+      $('#sortAscBtn').click(function () {
+        sortTable('asc');
+      });
+
+      $('#sortDescBtn').click(function () {
+        sortTable('desc');
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

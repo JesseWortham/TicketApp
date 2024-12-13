@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="/style.css">
+  <title>Document</title>
+</head>
+<body>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="/style.css">
+  <title>Submit Trouble Ticket</title>
+</head>
+<body>
+  <nav>
+    <h4>Jesse's Ticket App</h4>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/profile">Profile</a></li>
+      <li><a href="/auth/logout">Logout</a></li>
+      <li><a href="/OpenTickets">Open Tickets</a></li>
+      <li><a href="/RecentlyClosedTickets">Recently Closed Tickets</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div><h2>Submit Trouble Ticket Below</h2></div>
+    <form id="bugInputform" action="/auth/SubmitTicket" method="POST">
+      <div class="row">
+        <div class="col-25">
+          <label for="fname"> Name</label>
+        </div>
+        <div class="col-75">
+          <input type="text" id="fname" name="name" placeholder="Your name..">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-25">
+          <label for="priority">Priority</label>
+        </div>
+        <div class="col-75">
+          <select id="priority" name="priority">
+            <option value="Level">Select Severity Level</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+<div class="row">
+        <div class="col-25">
+          <label for="ticket_state">Ticket State</label>
+        </div>
+        <div class="col-75">
+          <select id="ticket_state" name="Ticket State">
+            <option value="open">open</option>
+            <option value="closed">closed</option>
+           
+          </select>
+        </div>
+     
+
+      <div class="row">
+        <div class="col-25">
+          <label for="Description">Description </label>
+        </div>
+        <div class="col-75">
+          <textarea id="description" name="description" placeholder="Write something.." style="height:200px"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit Ticket</button>
+    </form>
+    
+    <!-- Add a message element for displaying success message -->
+    <div id="ticketSubmittedMessage" class="alert alert-success" style="display: none;">
+      Ticket submitted successfully!
+    </div>
+
+    <!-- ... (rest of your HTML content) ... -->
+
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSuccess = urlParams.get('success');
+
+      if (isSuccess === 'true') {
+        const ticketSubmittedMessage = document.getElementById('ticketSubmittedMessage');
+        if (ticketSubmittedMessage) {
+          ticketSubmittedMessage.style.display = 'block';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+</body>
+</html>

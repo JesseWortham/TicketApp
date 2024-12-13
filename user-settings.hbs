@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/style.css">
+  <title>User Settings</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+    }
+    nav {
+      background-color: #343a40;
+      color: white;
+      padding: 10px;
+    }
+    nav h4 {
+      display: inline;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: inline;
+      float: right;
+    }
+    nav ul li {
+      display: inline;
+      margin-right: 10px;
+    }
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2 {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .btn {
+      margin-top: 10px;
+    }
+    .alert {
+      margin-bottom: 20px;
+    }
+    .alert-success {
+      background-color: #fd7e14; /* Orange background for success alert */
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h4>Jesse's Ticket App</h4>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/profile">Profile</a></li>
+      <li><a href="/auth/logout">Logout</a></li>
+      <li><a href="/OpenTickets">Open Tickets</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <h1>User Settings</h1>
+
+    <!-- Alert Container for Success -->
+    <div id="alertContainer" class="alert alert-success" style="display: none;"></div>
+
+    <!-- Select User Dropdown -->
+    <div class="form-group">
+      <label for="userSelect">Select a User:</label>
+      <select id="userSelect" class="form-control">
+        <option value="" disabled selected>Select a User</option>
+        {{#each users}}
+          <option value="{{this.id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <h2>Edit User</h2>
+    <form id="editUserForm" method="POST">
+      <div class="form-group">
+        <label for="editUserName">Name:</label>
+        <input type="text" id="editUserName" name="name" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="editUserEmail">Email:</label>
+        <input type="email" id="editUserEmail" name="email" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="editUserRole">Role:</label>
+        <select id="editUserRole" name="role" class="form-control" required>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit User Edits</button>
+      <button type="button" id="deleteUserButton" class="btn btn-danger">Delete Selected User</button>
+    </form>
+
+    <!-- Add User Form -->
+    <h2>Add User</h2>
+    <form id="addUserForm" method="POST" action="/add-user">
+      <div class="form-group">
+        <label for="addUserName">Name:</label>
+        <input type="text" id="addUserName" name="name" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="addUserEmail">Email:</label>
+        <input type="email" id="addUserEmail" name="email" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="addUserPassword">Password:</label>
+        <input type="password" id="addUserPassword" name="password" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="confirmAddUserPassword">Confirm Password:</label>
+        <input type="password" id="confirmAddUserPassword" name="confirmPassword" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="addUserRole">Role:</label>
+        <select id="addUserRole" name="role" class="form-control" required>
+          <option value="user" selected>User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-success">Add User</button>
+    </form>
+  </div>
+
+  <script>
+    const userSelect = document.getElementById('userSelect');
+    const editUserForm = document.getElementById('editUserForm');
+    const editUserName = document.getElementById('editUserName');
+    const editUserEmail = document.getElementById('editUserEmail');
+    const editUserRole = document.getElementById('editUserRole');
+    const deleteUserButton = document.getElementById('deleteUserButton');
+    const alertContainer = document.getElementById('alertContainer');
+
+    // Show alert messages
+    function showAlert(message, isError = false) {
+      alertContainer.textContent = message;
+      alertContainer.className = `alert ${isError ? 'alert-danger' : 'alert-success'}`;
+      alertContainer.style.display = 'block';
+      setTimeout(() => {
+        alertContainer.style.display = 'none';
+      }, 8000);
+    }
+
+    // Populate the Edit User Form when a user is selected
+    userSelect.addEventListener('change', function () {
+      const userId = userSelect.value;
+
+      if (userId) {
+        fetch(`/get-user/${userId}`)
+          .then(response => response.json())
+          .then(data => {
+            editUserForm.action = `/update-user/${data.id}`; // Set form action dynamically
+            editUserName.value = data.name || '';
+            editUserEmail.value = data.email || '';
+            editUserRole.value = data.role || 'user';
+          })
+          .catch(err => {
+            console.error('Error fetching user data:', err);
+            showAlert('Failed to fetch user data. Please try again.', true);
+          });
+      }
+    });
+
+    deleteUserButton.addEventListener('click', function () {
+      const userId = userSelect.value;
+      if (!userId) {
+        showAlert('Please select a user to delete.', true);
+        return;
+      }
+
+      const confirmation = confirm('Are you sure you want to delete this user?');
+      if (confirmation) {
+        fetch(`/delete-user/${userId}`, { method: 'DELETE' })
+          .then(response => {
+            if (!response.ok) {
+              // Handle error responses
+              return response.json().then(errorData => {
+                throw new Error(errorData.error || 'Unknown error occurred');
+              });
+            }
+            return response.json(); // Parse success response
+          })
+          .then(data => {
+            console.log('Success:', data); // Debug: Success response
+            showAlert(data.message); // Display success message
+            setTimeout(() => {
+              location.reload(); // Reload the page
+            }, 6000);
+          })
+          .catch(err => {
+            console.error('Error:', err); // Debug: Error response
+            showAlert(err.message || 'Failed to delete user.', true); // Display error message
+          });
+      }
+    });
+
+    // Check for the success query parameter and show the success alert
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const isSuccess = urlParams.get('success');
+
+  if (isSuccess) {
+    showAlert('User updated successfully!');
+  }
+});
+
+  </script>
+</body>
+</html>
+

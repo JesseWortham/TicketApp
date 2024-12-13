@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/style.css">
+  <title>Recently Closed Tickets</title>
+  <style>
+    /* CSS to widen the state column */
+    .status-column {
+      width: 150px; /* Adjust width as needed */
+      min-width: 150px; /* Ensure it doesn't shrink below this width */
+    }
+    .search-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h4>Jesse's Ticket App</h4>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/profile">Profile</a></li>
+      <li><a href="/auth/logout">Logout</a></li>
+      <li><a href="/SubmitTicket">Submit A Ticket</a></li>
+      <li><a href="/OpenTickets">Open Tickets</a></li>
+      <li><a href="/RecentlyClosedTickets">Recently Closed Tickets</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="search-container">
+      <form action="/search" method="GET" class="d-flex">
+        <input type="text" name="description" placeholder="Enter description" class="form-control me-2">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+    </div>
+    
+    <h1 class="text-center">Recently Closed Tickets</h1>
+    
+    <table class="table table-bordered">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Description</th>
+          <th scope="col">Severity</th>
+          <th scope="col">Action</th>
+          <th scope="col">Date/Time</th>
+          <th scope="col">Assigned To</th>
+          <th scope="col" class="status-column">State</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each rows}}
+          <tr>
+            <td>{{this.description}}</td>
+            <td>{{this.priority}}</td>
+            <td>
+              <a href="/viewuser/{{this.id}}" class="btn btn-light btn-small"><i class="bi bi-eye"></i> View</a>
+              <a href="/editticket/{{this.id}}" class="btn btn-light btn-small"><i class="bi bi-pencil"></i> Edit</a>
+              <a href="#" data-ticket-id="{{this.id}}" class="btn btn-light btn-small delete-ticket"><i class="bi bi-trash"></i> Delete</a>
+            </td>
+            <td>{{this.created_at}}</td>
+            <td>{{this.assigned_to}}</td>
+            <td class="status-column">
+              <select class="form-control ticket-state" data-ticket-id="{{this.id}}">
+                <option value="closed" {{#if (eq this.ticket_state "closed")}}selected{{/if}}>Closed</option>
+                <option value="open" {{#if (eq this.ticket_state "open")}}selected{{/if}}>Open</option>
+              </select>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  <div id="alertMessage" class="alert alert-success" style="display:none;"></div>
+
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script>
+    $(document).on('click', '.delete-ticket', function (e) {
+      e.preventDefault();
+      const ticketId = $(this).data('ticket-id');
+
+      $.ajax({
+        url: '/profile/' + ticketId,
+        method: 'POST',
+        success: function (response) {
+          console.log(response.message);
+          $(e.target).closest('tr').remove();
+          $('#alertMessage').text('Ticket deleted successfully.').show();
+          setTimeout(() => {
+            $('#alertMessage').fadeOut();
+          }, 3000);
+        },
+        error: function (error) {
+          console.error(error.responseJSON.error);
+          $('#alertMessage').text('Error occurred: ' + error.responseJSON.error).show().addClass('alert-danger');
+          setTimeout(() => {
+            $('#alertMessage').fadeOut();
+          }, 3000);
+        },
+      });
+    });
+
+    $(document).on('change', '.ticket-state', function () {
+      const ticketId = $(this).data('ticket-id');
+      const newState = $(this).val();
+
+      $.ajax({
+        url: '/update-ticket-state',
+        method: 'POST',
+        data: { ticketId, newState },
+        success: function (response) {
+          console.log(response.message);
+          $('#alertMessage').text(newState === 'open' ? 'Ticket opened successfully.' : 'Ticket closed successfully.').show();
+          setTimeout(() => {
+            $('#alertMessage').fadeOut();
+          }, 3000);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.error('Error:', textStatus, errorThrown);
+        },
+      });
+    });
+
+
+   $(document).on('change', '.ticket-state', function () {
+  const ticketId = $(this).data('ticket-id');
+  const newState = $(this).val();
+
+  $.ajax({
+    url: '/update-ticket-state',
+    method: 'POST',
+    data: { ticketId, newState },
+    success: function (response) {
+      console.log(response.message);
+      if (newState === 'open') {
+        $('#alertMessage').text('Ticket opened successfully.').show();
+      } else if (newState === 'closed') {
+        $('#alertMessage').text('Ticket closed successfully.').show();
+      }
+      setTimeout(() => {
+        $('#alertMessage').fadeOut();
+      }, 3000);
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      console.error('Error:', textStatus, errorThrown);
+    },
+  });
+});
+
+  </script>
+</body>
+</html>
+
+
+
+
+
+
